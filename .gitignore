@@ -1,0 +1,10 @@
+*~
+\#*#
+.#*
+doc
+pkg
+.source_index
+ext/*/Makefile
+*.o
+*.so
+*.dll

@@ -1,0 +1,11 @@
+.autotest
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+ext/dcache_ary/dcache_ary.c
+ext/dcache_ary/extconf.rb
+ext/dcache_list/dcache_list.c
+ext/dcache_list/extconf.rb
+lib/dcache.rb
+spec/dcache_spec.rb
