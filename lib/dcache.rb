@@ -20,10 +20,10 @@ EOS
   embedded_reader :hits
   # Number of cache misses
   embedded_reader :misses
-  # Number of elements stored (only if +backend == :list+)
+  # Number of elements stored (only if <tt>backend == :list</tt>)
   embedded_reader :stored
   alias :added :stored
-  # Number of elements removed from cache (only if +backend == :list+)
+  # Number of elements removed from cache (only if <tt>backend == :list</tt>)
   embedded_reader :removed
   alias :deleted :removed
   # Number of elements currently stored in cache
@@ -31,7 +31,7 @@ EOS
   alias :size :length
   # Maximum number of elements that can be stored.
   embedded_reader :max_items
-  # Set maximum number of elemts.  Only if +backend == :list+.
+  # Set maximum number of elements.  Only if <tt>backend == :list</tt>.
   # * +val+: new maximum number of elements. If it's smaller than the amount of
   #   currently stored elements, old elements will be eliminated. If it's +nil+,
   #   there's no maximum.
@@ -44,15 +44,18 @@ EOS
 
   # Initializes DCache.
   # * +backend+: which backend to use. Currently can be +:ary+ or +:list+.
-  #    +:ary+ is based on a fixed size array, and implements something like
-  # "Least Recently Added"
+  #   +:ary+::  is based on a fixed size array, and implements something like
+  #             "Least Recently Added".
+  #   +:list+:: uses a linked list to store the elements, so it's maximum size
+  #             can be changed during runtime, and it implements a simple LRU
+  #             cache.
   def initialize backend = :list, *args
     require "dcache_#{backend}"
     @backend = Kernel.const_get("DCache#{backend.capitalize}").new(*args)
     @timeout = nil
   end
 
-  # Tries to get avalue from cache. If it fails, executes the block if given, or
+  # Tries to get a value from cache. If it fails, executes the block if given, or
   # returns default
   # * +key+: the key of the value to get
   # * +default: return value if no block given and cache doesn't contain key.
@@ -67,7 +70,7 @@ EOS
   # Tries to get a value. If it fails, add it, then return.
   # * +key+: the key of the value to get
   # * +value+: value to set if get fails. If a block is passed, it'll be
-  #   execeuted instead of this
+  #   executed instead of this
   # * +timeout+: timeout of the newly added item
   def get_or_add key, value = nil, timeout = @timeout
     @backend.get key do

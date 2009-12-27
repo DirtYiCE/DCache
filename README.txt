@@ -56,6 +56,7 @@ Get statistics:
 * Ruby 1.9 (may work with 1.8)
 * Development dependencies:
   * Hoe-2.4
+  * hoe-git-1.3.0
   * RSpec-1.2
 
 == INSTALL:
