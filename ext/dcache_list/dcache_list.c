@@ -1,6 +1,8 @@
 #include <ruby.h>
 #include <time.h>
 
+static ID CMP;
+
 typedef struct ItemStruct Item;
 struct ItemStruct
 {
@@ -197,11 +199,10 @@ static VALUE method_add(VALUE self, VALUE key, VALUE val, VALUE timeout)
 {
 	GET_STRUCT(self, s);
 
-	ID cmp = rb_intern("==");
 	Item * i;
 	for (i = s->head; i; )
 	{
-		if (rb_funcall(i->key, cmp, 1, key) == Qtrue)
+		if (rb_funcall(i->key, CMP, 1, key) == Qtrue)
 		{
 			item_bring_front(s, i);
 			i->value = val;
@@ -247,11 +248,10 @@ static VALUE method_get(int argc, VALUE * argv, VALUE self)
 
 	time_t tim = time(NULL);
 	Item * i;
-	ID cmp = rb_intern("==");
 	for (i = s->head; i; i = i->next)
 	{
 		if (i->time <= tim && i->time != 0) continue;
-		if (rb_funcall(i->key, cmp, 1, key) == Qtrue)
+		if (rb_funcall(i->key, CMP, 1, key) == Qtrue)
 		{
 			++s->hits;
 			item_bring_front(s, i);
@@ -275,7 +275,6 @@ static VALUE method_remove(int argc, VALUE * argv, VALUE self)
 	time_t tim = time(NULL);
 	int has_block = rb_block_given_p();
 
-	ID cmp = rb_intern("==");
 	Item * i;
 	for (i = s->head; i; )
 	{
@@ -287,7 +286,7 @@ static VALUE method_remove(int argc, VALUE * argv, VALUE self)
 			to_del = rb_yield(ary);
 		}
 		else
-			to_del = rb_funcall(i->key, cmp, 1, todel);
+			to_del = rb_funcall(i->key, CMP, 1, todel);
 
 		if (to_del != Qfalse && to_del != Qnil)
 			i = item_remove(s, i);
@@ -333,6 +332,7 @@ static VALUE method_new(int argc, VALUE * argv, VALUE class)
 
 void Init_dcache_list()
 {
+	CMP = rb_intern("eql?");
 	VALUE dcache = rb_define_class("DCacheList", rb_cObject);
 	rb_define_singleton_method(dcache, "new", method_new, -1);
 	rb_define_method(dcache, "add", method_add, 3);

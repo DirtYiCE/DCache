@@ -1,6 +1,8 @@
 #include <ruby.h>
 #include <time.h>
 
+static ID CMP;
+
 typedef struct
 {
 	VALUE key;
@@ -109,7 +111,7 @@ static VALUE method_get(int argc, VALUE * argv, VALUE self)
 	{
 		SubStruct * it = &(s->s[i]);
 		if (it->time <= tim && it->time != 0) continue;
-		if (rb_funcall(it->key, rb_intern("=="), 1, key) == Qtrue)
+		if (rb_funcall(it->key, CMP, 1, key) == Qtrue)
 		{
 			++s->hits;
 			return it->value;
@@ -135,7 +137,6 @@ static VALUE mehod_remove(int argc, VALUE * argv, VALUE self)
 	int has_block = rb_block_given_p();
 
 	int i;
-	ID cmp = rb_intern("==");
 	for (i = 0; i < s->items; ++i)
 	{
 		SubStruct * it = &(s->s[i]);
@@ -148,7 +149,7 @@ static VALUE mehod_remove(int argc, VALUE * argv, VALUE self)
 				to_del = rb_yield(ary);
 			}
 			else
-				to_del = rb_funcall(it->key, cmp, 1, todel);
+				to_del = rb_funcall(it->key, CMP, 1, todel);
 
 			if (to_del != Qfalse && to_del != Qnil)
 				it->time = 1;
@@ -193,6 +194,7 @@ static VALUE method_new(VALUE class, VALUE max_items)
 
 void Init_dcache_ary()
 {
+	CMP = rb_intern("eql?");
 	VALUE dcache = rb_define_class("DCacheAry", rb_cObject);
 	rb_define_singleton_method(dcache, "new", method_new, 1);
 	rb_define_method(dcache, "add", method_add, 3);
