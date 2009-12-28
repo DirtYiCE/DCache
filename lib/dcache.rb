@@ -14,7 +14,7 @@ EOS
   public
 
   # Which DCache backend is used (can be +:list+ or +:ary+ currently)
-  attr_reader :backend
+  attr_reader :backend_type
 
   # Number of cache hits
   embedded_reader :hits
@@ -29,8 +29,11 @@ EOS
   # Number of elements currently stored in cache
   embedded_reader :length
   alias :size :length
+  alias :items :length
   # Maximum number of elements that can be stored.
   embedded_reader :max_items
+  alias :max_length :max_items
+  alias :max_size :max_items
   # Set maximum number of elements.  Only if <tt>backend == :list</tt>.
   # * +val+: new maximum number of elements. If it's smaller than the amount of
   #   currently stored elements, old elements will be eliminated. If it's +nil+,
@@ -38,6 +41,8 @@ EOS
   def max_items= val
     @backend.max_items = val
   end
+  alias :max_length= :max_items=
+  alias :max_size= :max_items=
 
   # Default timeout for new values
   attr_accessor :timeout
@@ -51,6 +56,7 @@ EOS
   #             cache.
   def initialize backend = :list, *args
     require "dcache_#{backend}"
+    @backend_type = backend
     @backend = Kernel.const_get("DCache#{backend.capitalize}").new(*args)
     @timeout = nil
   end
@@ -124,4 +130,75 @@ EOS
     @backend.clear
   end
   alias :erase :clear
+
+  def inspect
+    s = "#<#{self.class.to_s} "
+    s << get_variables_ary.map do |i|
+      ss ="#{i}="
+      if (i[0] == '@') then
+        ss << instance_variable_get(i).inspect
+      else
+        ss << send(i).inspect
+      end
+    end.join(', ')
+    s << '>'
+  end
+
+  def pretty_print p
+    p.object_group(self) do
+      # p.seplist(p.pretty_print_instance_variables, lambda { p.text ',' }) {|v|
+      #   p.breakable
+      #   v = v.to_s if Symbol === v
+      #   p.text v
+      #   p.text '='
+      #   p.group(1) {
+      #     p.breakable ''
+      #     p.pp(self.instance_eval(v))
+      #   }
+      # }
+      ary = get_variables_ary
+      p.seplist(ary, lambda { p.text ','}) do |i|
+        p.breakable
+        p.text "#{i}"
+        p.text '='
+        p.group(1) {
+          p.breakable ''
+          if i[0] == '@' then
+            p.pp(self.instance_variable_get(i))
+          else
+            p.pp(self.send(i))
+          end
+        }
+      end
+      p.text ','
+      p.breakable
+      p.text "items="
+      p.group(1, '{', '}') {
+        prev = false
+        @backend.remove do |k,v|
+          p.text ',' if prev
+          prev = true
+
+          p.breakable
+          p.group(1) {
+            p.pp(k)
+          }
+          # non-standard, but i like better that way
+          p.text ' => '
+          p.group(1) {
+            p.pp(v)
+          }
+          false
+        end
+      }
+    end
+  end
+
+  private
+  def get_variables_ary
+    ary = ['@backend_type', '@backend', '@timeout', :length, :max_length,
+           :hits, :misses]
+    ary += [:stored, :removed] if @backend_type == :list
+    ary
+  end
 end
