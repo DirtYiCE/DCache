@@ -64,12 +64,11 @@ end
 # YARD documentation
 Rake.application.instance_variable_get('@tasks').delete("docs")
 begin
-  require 'yard/reader'
+  require 'yard'
 
   task :docs => :yard
   YARD::Rake::YardocTask.new do |t|
-    t.files   = ['lib/**/*.rb', 'ext/**/*.c', '-', 'History.rdoc']
-    t.options = []
+    # options and files read from '.yardopts'
   end
 rescue LoadError
   puts "** Install `yard' to generate docs."

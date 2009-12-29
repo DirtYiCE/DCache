@@ -1,0 +1,12 @@
+--protected
+--private
+--title
+DCache documentation
+--load
+yard/reader
+--main
+README.rdoc
+lib/**/*.rb
+ext/**/*.c
+-
+History.rdoc

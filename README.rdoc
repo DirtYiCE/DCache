@@ -1,6 +1,7 @@
 = DCache
 
-* FIX (url)
+* "Website": http://github.com/DirtYiCE/DCache
+* Documentation: http://yardoc.org/docs/DirtYiCE-DCache/file:README.rdoc
 
 == DESCRIPTION:
 
@@ -16,7 +17,7 @@ A simple caching gem.
 
 == PROBLEMS:
 
-* ?
+* Should use #hash for faster comparisions.
 
 == SYNOPSIS:
 
