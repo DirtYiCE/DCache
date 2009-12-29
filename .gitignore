@@ -8,3 +8,4 @@ ext/*/Makefile
 *.o
 *.so
 *.dll
+.yardoc

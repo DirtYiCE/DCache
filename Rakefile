@@ -3,8 +3,8 @@
 require 'rubygems'
 require 'hoe'
 
-SOEXT = Config::CONFIG["DLEXT"]
-EXTS = ["ary", "list"]
+SOEXT = Config::CONFIG['DLEXT']
+EXTS = [:ary, :list]
 EXT_FILES = EXTS.map do |i|
   "lib/dcache_#{i}.#{SOEXT}"
 end
@@ -13,13 +13,20 @@ Hoe.plugin :git
 Hoe.spec 'dcache' do
   developer("Kővágó, Zoltán", "DirtY.iCE.hu@gmail.com")
 
+  self.readme_file = 'README.rdoc'
+  self.history_file = 'History.rdoc'
+  self.post_install_message = "** Please build documentation with `yard'"
+
   spec_extras[:extensions] = EXTS.map do |i|
     "ext/dcache_#{i}/extconf.rb"
   end
 
-  extra_dev_deps << ["rspec", ">=1.2"]
-  extra_dev_deps << ["hoe-git", ">=1.3.0"]
+  extra_dev_deps << ['rspec', '>=1.2']
+  extra_dev_deps << ['hoe-git', '>=1.3.0']
+  extra_dev_deps << ['yard', '>=0.5'] # for documentation
 
+  clean_globs << '.yardoc'
+  # clean globs for native extensions
   clean_globs << EXT_FILES
   EXTS.each do |i|
     clean_globs << "ext/dcache_#{i}/Makefile"
@@ -29,16 +36,14 @@ Hoe.spec 'dcache' do
   end
   clean_globs.flatten!
 
-  $hoe = self
-
-  self.rspec_options = [ "--color" ]
+  self.rspec_options = [ '--color' ]
 end
 
-RDOC_OPTS = ["-aSN", "-x", '.*~', "-x", 'Manifest\.txt', "-x", 'Rakefile',
-             "-x", "ext", "-x", "spec", "-A", "embedded_reader=R",
-             "-t", "DCache documentation" ]
-($hoe.spec.rdoc_options << RDOC_OPTS).flatten!
+# Workaround !
+file 'History.txt' => 'History.rdoc'
+file 'README.txt' => 'README.rdoc'
 
+# Native extension
 task :spec => EXT_FILES
 desc "Builds native extensions"
 task :build => EXT_FILES
@@ -49,23 +54,25 @@ EXTS.each do |e|
 
   file tfile => files do
     Dir.chdir "ext/dcache_#{e}" do
-      ruby "extconf.rb"
-      sh "make"
+      ruby 'extconf.rb'
+      sh 'make'
     end
     FileUtils.copy "ext/dcache_#{e}/dcache_#{e}.#{SOEXT}", tfile
   end
 end
 
+# YARD documentation
 Rake.application.instance_variable_get('@tasks').delete("docs")
+begin
+  require 'yard/reader'
 
-desc "Make RDoc documentation"
-task :docs do
-  require "fileutils"
-  FileUtils.rm_rf "doc"
-
-  require "rdoc/rdoc"
-  d = RDoc::RDoc.new
-  d.document RDOC_OPTS
+  task :docs => :yard
+  YARD::Rake::YardocTask.new do |t|
+    t.files   = ['lib/**/*.rb', 'ext/**/*.c', '-', 'History.rdoc']
+    t.options = []
+  end
+rescue LoadError
+  puts "** Install `yard' to generate docs."
 end
 
 # vim: syntax=ruby

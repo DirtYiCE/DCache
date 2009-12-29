@@ -19,6 +19,10 @@ typedef struct
 	SubStruct s[];
 } Struct;
 
+/**
+ * Mark elements in cache for Ruby's GC.
+ * @param[in] s struct associated with self.
+ */
 static void struct_mark(Struct * s)
 {
 	time_t tim = time(NULL);
@@ -36,29 +40,46 @@ static void struct_mark(Struct * s)
 	}
 }
 
+/**
+ * Gets the associated structure.
+ * @param[in] self self
+ * @param[out] var name of the variable that'll contain the pointer to the
+ *   structure.
+ */
 #define GET_STRUCT(self, var)					\
 	Struct * var;								\
 	Data_Get_Struct(self, Struct, var);
 
-
+/*
+ * @return [Number] maximum number of items cache can store.
+ */
 static VALUE method_get_max_items(VALUE self)
 {
 	GET_STRUCT(self, s);
 	return INT2NUM(s->items);
 }
 
+/*
+ * @return [Number] number of cache hits.
+ */
 static VALUE method_get_hits(VALUE self)
 {
 	GET_STRUCT(self, s);
 	return INT2NUM(s->hits);
 }
 
+/*
+ * @return [Number] number of cache misses.
+ */
 static VALUE method_get_misses(VALUE self)
 {
 	GET_STRUCT(self, s);
 	return INT2NUM(s->misses);
 }
 
+/*
+ * @return [Number] number of currently cached items.
+ */
 static VALUE method_get_stored_items(VALUE self)
 {
 	GET_STRUCT(self, s);
@@ -73,6 +94,14 @@ static VALUE method_get_stored_items(VALUE self)
 	return INT2NUM(cnt);
 }
 
+/* @overload add(key, value, timeout)
+ *  Add a new value to cache.
+ *  @param [#eql?] key an unique identifier (in the cache)
+ *  @param value the value
+ *  @param [Number, nil] timeout time in seconds after the value will be purged
+ *    from cache. +nil+ if there's no such limit.
+ *  @return *value*
+ */
 static VALUE method_add(VALUE self, VALUE key, VALUE val, VALUE timeout)
 {
 	GET_STRUCT(self, s);
@@ -90,12 +119,30 @@ static VALUE method_add(VALUE self, VALUE key, VALUE val, VALUE timeout)
 	return val;
 }
 
+/**
+ * Decreases the item pointer, wrapping around the start if needed.
+ * @param[in,out] n pointer to the current pointer, will be changed directly.
+ * @param[in] cnt size of the cache
+ */
 static void dec(int * n, int cnt)
 {
 	--(*n);
 	if (*n < 0) *n = cnt - 1;
 }
 
+/*
+ * Tries to get a value from the cache.
+ * @overload get(key, default = nil)
+ *   Tries to get a value from cache. If it fails, returns a default value.
+ *   @param [#eql?] key the key of the value to get
+ *   @param default default return value.
+ *   @return the value from cache if found, *default* otherwise
+ * @overload get(key)
+ *   Tries to get a value from cache. If it fails, executes the block.
+ *   @param [#eql?] key the key of the value to get
+ *   @yield if key is not found.
+ *   @return the value from cache if found, or yielded block's return value.
+ */
 static VALUE method_get(int argc, VALUE * argv, VALUE self)
 {
 	GET_STRUCT(self, s);
@@ -127,6 +174,17 @@ static VALUE method_get(int argc, VALUE * argv, VALUE self)
 	return default_val;
 }
 
+/*
+ * Removes a given key or keys from the cache.
+ * @overload remove(key)
+ *   @param key remove this key from the cache
+ * @overload remove() { |key, value| ... }
+ *   @yield [key, value] for each item in the cache,
+ *   @yieldparam key key of the current item.
+ *   @yieldparam value value associated with the *key*.
+ *   @yieldreturn [Boolean] +true+ if you want to delete this item
+ * @return [nil]
+ */
 static VALUE mehod_remove(int argc, VALUE * argv, VALUE self)
 {
 	GET_STRUCT(self, s);
@@ -159,6 +217,10 @@ static VALUE mehod_remove(int argc, VALUE * argv, VALUE self)
 	return Qnil;
 }
 
+/*
+ * Clears the cache.
+ * @return [nil]
+ */
 static VALUE method_clear(VALUE self)
 {
 	GET_STRUCT(self, s);
@@ -170,6 +232,11 @@ static VALUE method_clear(VALUE self)
 	return Qnil;
 }
 
+/* @overload new(max_items)
+ *  Creates a new array-based DCache backend with fixed size.
+ *  @param [Number] max_items number of cache items this cache can store.
+ *  @return [DCacheAry] the new object.
+ */
 static VALUE method_new(VALUE class, VALUE max_items)
 {
 	Struct * s;
