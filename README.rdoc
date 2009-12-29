@@ -1,6 +1,6 @@
 = DCache
 
-* "Website": http://github.com/DirtYiCE/DCache
+* http://github.com/DirtYiCE/DCache
 * Documentation (git): http://yardoc.org/docs/DirtYiCE-DCache/file:README.rdoc
 * Documentation (release): http://dirty-ice.web44.net/doc/dcache
 
@@ -64,7 +64,10 @@ Get statistics:
 
 == INSTALL:
 
-After checking out install it by running:
+Intall the latest release:
+  $ sudo gem install dcache
+
+Or check out the git repository from Github, then run:
   $ rake install_gem
 This will install it into the system, so you'll need the root
 password. Alternatively you can run
