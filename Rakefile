@@ -1,77 +1,78 @@
-# -*- mode: ruby; coding: utf-8 -*-
+# -*- mode: ruby; encoding: utf-8 -*-
 
 require 'rubygems'
-require 'hoe'
+require 'rake'
 
-SOEXT = Config::CONFIG['DLEXT']
-EXTS = [:ary, :list]
+DLEXT = Config::CONFIG['DLEXT']
+EXTS = %w(ary list)
 EXT_FILES = EXTS.map do |i|
-  "lib/dcache_#{i}.#{SOEXT}"
+  "lib/dcache_#{i}.#{DLEXT}"
 end
 
-Hoe.plugin :git
-Hoe.spec 'dcache' do
-  developer("Kővágó, Zoltán", "DirtY.iCE.hu@gmail.com")
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    gem.name = "dcache"
+    gem.summary = "A simple caching gem"
+    gem.description = %Q{
+A simple caching gem using multiple backends written in C.
+}
+    gem.email = "DirtY.iCE.hu@gmail.com"
+    gem.homepage = "http://github.com/DirtYiCE/DCache"
+    gem.authors = ["Kővágó, Zoltán"]
+    gem.add_development_dependency "rspec", ">= 1.2.9"
+    gem.add_development_dependency "yard", ">= 0.5"
+    gem.has_rdoc = false
+    gem.extensions = EXTS.map do |i|
+      "ext/dcache_#{i}/extconf.rb"
+    end
+    gem.post_install_message = %Q{
+** Please build the documentation using yardoc.
+}
 
-  self.readme_file = 'README.rdoc'
-  self.history_file = 'History.rdoc'
-  self.post_install_message = "** Please build documentation with `yard'"
-
-  spec_extras[:extensions] = EXTS.map do |i|
-    "ext/dcache_#{i}/extconf.rb"
+    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
-
-  extra_dev_deps << ['rspec', '>=1.2']
-  extra_dev_deps << ['hoe-git', '>=1.3.0']
-  extra_dev_deps << ['yard', '>=0.5'] # for documentation
-
-  clean_globs << '.yardoc'
-  # clean globs for native extensions
-  clean_globs << EXT_FILES
-  EXTS.each do |i|
-    clean_globs << "ext/dcache_#{i}/Makefile"
-    clean_globs << "ext/dcache_#{i}/dcache_#{i}.o"
-    clean_globs << "ext/dcache_#{i}/dcache_#{i}.#{SOEXT}"
-    clean_globs << "lib/dcache_#{i}.#{SOEXT}"
-  end
-  clean_globs.flatten!
-
-  self.rspec_options = [ '--color' ]
+  Jeweler::GemcutterTasks.new
+rescue LoadError
+  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
 
-# Workaround !
-file 'History.txt' => 'History.rdoc'
-file 'README.txt' => 'README.rdoc'
+require 'spec/rake/spectask'
+Spec::Rake::SpecTask.new(:spec) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.spec_files = FileList['spec/**/*_spec.rb']
+end
 
-# Native extension
+Spec::Rake::SpecTask.new(:rcov) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.pattern = 'spec/**/*_spec.rb'
+  spec.rcov = true
+end
+
+task :spec => :check_dependencies
 task :spec => EXT_FILES
-desc "Builds native extensions"
-task :build => EXT_FILES
+
+task :default => :spec
+
+begin
+  require 'yard'
+  YARD::Rake::YardocTask.new
+rescue LoadError
+  task :yardoc do
+    abort "YARD is not available. In order to run yardoc, you must: sudo gem install yard"
+  end
+end
+
+# build extensions
+desc "Build native extensions"
+task :make => EXT_FILES
 
 EXTS.each do |e|
-  files = [ "ext/dcache_#{e}/extconf.rb", "ext/dcache_#{e}/dcache_#{e}.c" ]
-  tfile = "lib/dcache_#{e}.#{SOEXT}"
-
-  file tfile => files do
+  file "lib/dcache_#{e}.#{DLEXT}" => "ext/dcache_#{e}/dcache_#{e}.c" do
     Dir.chdir "ext/dcache_#{e}" do
       ruby 'extconf.rb'
       sh 'make'
     end
-    FileUtils.copy "ext/dcache_#{e}/dcache_#{e}.#{SOEXT}", tfile
+    FileUtils.copy "ext/dcache_#{e}/dcache_#{e}.#{DLEXT}", "lib/"
   end
 end
-
-# YARD documentation
-Rake.application.instance_variable_get('@tasks').delete("docs")
-begin
-  require 'yard'
-
-  task :docs => :yard
-  YARD::Rake::YardocTask.new do |t|
-    # options and files read from '.yardopts'
-  end
-rescue LoadError
-  puts "** Install `yard' to generate docs."
-end
-
-# vim: syntax=ruby

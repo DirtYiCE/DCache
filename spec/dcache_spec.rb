@@ -1,4 +1,4 @@
-require "dcache"
+require 'dcache'
 
 share_examples_for "base DCache" do
   it "should retrieve 'value'" do

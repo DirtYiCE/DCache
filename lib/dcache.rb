@@ -1,8 +1,5 @@
 # Main DCache class
 class DCache
-  # DCache's version
-  VERSION = '0.0.0'
-
   protected
   # Declares a reader to the underlying backend.
   def self.embedded_reader *args

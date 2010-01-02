@@ -10,3 +10,4 @@ lib/**/*.rb
 ext/**/*.c
 -
 History.rdoc
+LICENSE

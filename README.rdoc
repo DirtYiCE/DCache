@@ -1,14 +1,12 @@
 = DCache
 
-* http://github.com/DirtYiCE/DCache
+A simple caching gem.
+
+* Github project page: http://github.com/DirtYiCE/DCache
 * Documentation (git): http://yardoc.org/docs/DirtYiCE-DCache/file:README.rdoc
 * Documentation (release): http://dirty-ice.web44.net/doc/dcache
 
-== DESCRIPTION:
-
-A simple caching gem.
-
-== FEATURES:
+== Features
 
 * Two different backends
 * Cached entries can have a timeout
@@ -16,11 +14,11 @@ A simple caching gem.
   dynamically (+:list+ backend)
 * Backends are written in C for speed
 
-== PROBLEMS:
+== Problems
 
-* Should use #hash for faster comparisions.
+* Should use #hash for faster comparisons.
 
-== SYNOPSIS:
+== Usage
 
 Initialize a cache using +:ary+ backend, and storing 1000 values
   require "dcache"
@@ -52,58 +50,31 @@ Get statistics:
   [c.hits, c.misses]                 # => [4, 8]
   # also [c.stored, c.removed] with :list backend
 
+See {DCache} for details.
 
-== REQUIREMENTS:
+== Requirements
 
 * Ruby 1.9 (may work with 1.8)
 * Development dependencies:
-  * Hoe-2.4
-  * hoe-git-1.3.0
+  * Jeweler
   * RSpec-1.2
   * yard (git version) (to generate docs)
 
-== INSTALL:
+== Install
 
-Intall the latest release:
-  $ sudo gem install dcache
+Install the latest release:
+  $ gem install dcache
 
-Or check out the git repository from Github, then run:
-  $ rake install_gem
-This will install it into the system, so you'll need the root
-password. Alternatively you can run
-  $ rake gem
-which will build a gem, and put it into pkg/.
+== Note on Patches/Pull Requests
 
-== DEVELOPERS:
+* Fork the project.
+* Make your feature addition or bug fix.
+* Add tests for it. This is important so I don't break it in a
+  future version unintentionally.
+* Commit, do not mess with rakefile, version, or history.
+  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
+* Send me a pull request. Bonus points for topic branches.
 
-After checking out the source, run:
+== Copyright
 
-  $ rake newb
-
-This task will install any missing dependencies, run the tests/specs,
-and generate the RDoc.
-
-== LICENSE:
-
-(The MIT License)
-
-Copyright (c) 2009 Kővágó, Zoltán
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Copyright (c) 2009, 2010 Kővágó, Zoltán. See {file:LICENSE} for details.
